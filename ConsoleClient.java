@@ -1,5 +1,5 @@
 /*
- *	Purpose: Provide GUI to users to chat.
+ *	Purpose: Provide command line interface for users to chat.
  */
 
 import java.io.*;
@@ -9,50 +9,58 @@ import java.util.*;
 public class ConsoleClient extends Thread
 {
 
+	/*
+	 *	Establish variables.
+	 */
 	ChatMessage myObject;
-	boolean sendingdone = false, receivingdone = false;
+	boolean sendingdone = false; 
+	boolean receivingdone = false;
 	Scanner scan;
 	Socket socketToServer;
 	ObjectOutputStream myOutputStream;
 	ObjectInputStream myInputStream;
 
-	public ConsoleClient(){	
+	/*
+	 *	Establish constructor
+	 */
+	public ConsoleClient()
+	{	
 		
 		try
-		{						
+		{
 
+			// Set up command line scanner.
+			// Create ChatMessage object.
 			scan = new Scanner(System.in);
-
 			myObject = new ChatMessage();
 
-			socketToServer = new Socket("127.0.0.1", 4000);
-
+			// Connect to server.
+			// Set up input / output streams.
+			socketToServer = new Socket("afs1.njit.edu", 4000);
 			myOutputStream = new ObjectOutputStream(socketToServer.getOutputStream());
-
 			myInputStream = new ObjectInputStream(socketToServer.getInputStream());
 
+			// start() executes run()
 			start();
 			
+			/*
+			 *	While the client is connected, get message from next line.
+			 *	Set message as this text, reset the stream and write the object.
+			 */
 			while(!sendingdone)
 			{
-
+				//
 				String message = scan.nextLine();
-
 				myObject.setMessage(message);	
-				
 				myOutputStream.reset();			
-
 				myOutputStream.writeObject(myObject);
-				
-				//if(myObject.getMessage().equals("bye")){
-				//	sendingdone = true;
-				//}
 			}
 
+			/*
+			 *	Once done, close streams and socket.
+			 */
 			myOutputStream.close();
-			
 			myInputStream.close();
-
       socketToServer.close();	
 		}
 		catch(Exception e)
@@ -61,9 +69,19 @@ public class ConsoleClient extends Thread
 			
     }
 	}
+
+	/*
+	 *	run(), invoked by start()
+	 */
 	public void run()
 	{
+
 		System.out.println("Listening for messages from server . . . ");
+		
+		/*
+		 *	While the user is connected, listen for incoming messages.
+		 *	Print incoming messages to the console.
+		 */
 		try
 		{
 			while(!receivingdone)
@@ -84,6 +102,9 @@ public class ConsoleClient extends Thread
 
 	public static void main(String[] arg)
 	{
+		/*
+		 *	Launch the client!
+		 */
 		ConsoleClient c = new ConsoleClient();
 	}
 }

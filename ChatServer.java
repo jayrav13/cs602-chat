@@ -11,7 +11,7 @@ import java.util.*;
  */
 public class ChatServer
 {  
-  public static void main(String[] args ) 
+  public static void main(String[] args) 
   {  
 
     //  ArrayList: holds all ChatHandlers
@@ -54,7 +54,7 @@ class ChatHandler extends Thread
      *  Add self to handlers. Attempt to create streams.
      */
 
- 		incoming = i;
+ 	  incoming = i;
 	  handlers = h;
 	  handlers.add(this);
 
@@ -125,7 +125,9 @@ class ChatHandler extends Thread
   		while(!done)
       {
         /*
-         *  When I type in a message, collect it and broadcast it.
+         *  When a message arrives, collect it and broadcast it.
+         *  QUESTION - does this only execute when a message is sent?
+         *  This should be running whenever a client connects.
          */
   			myObject = (ChatMessage)in.readObject();
   			System.out.println("Message read: " + myObject.getMessage());
