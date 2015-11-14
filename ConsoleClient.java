@@ -20,6 +20,8 @@ public class ConsoleClient extends Thread
 	ObjectOutputStream myOutputStream;
 	ObjectInputStream myInputStream;
 
+	String username;
+
 	/*
 	 *	Establish constructor
 	 */
@@ -33,6 +35,15 @@ public class ConsoleClient extends Thread
 			// Create ChatMessage object.
 			scan = new Scanner(System.in);
 			myObject = new ChatMessage();
+
+			username = "";
+			while(username.length() == 0) 
+			{
+				System.out.print("Hey! What's your name? ");
+				username = scan.nextLine();
+			}
+
+			System.out.println("Logged in as " + username + ".");
 
 			// Connect to server.
 			// Set up input / output streams.
@@ -52,6 +63,7 @@ public class ConsoleClient extends Thread
 				//
 				String message = scan.nextLine();
 				myObject.setMessage(message);	
+				myObject.setName(username);
 				myOutputStream.reset();			
 				myOutputStream.writeObject(myObject);
 			}

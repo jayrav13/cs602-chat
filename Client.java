@@ -14,16 +14,24 @@ public class Client extends Thread implements ActionListener
 	/*
 	 *	Establish variables.
 	 */
-	ChatMessage myObject;
 	boolean sendingdone = false;
 	boolean receivingdone = false;
-	Scanner scan;
-	Socket socketToServer;
 	ObjectOutputStream myOutputStream;
 	ObjectInputStream myInputStream;
-	Frame f;
-	TextField tf;
-	TextArea ta;
+	Socket socketToServer;
+	
+	ChatMessage myObject;
+	Scanner scan;
+
+	Frame chatWindow;
+	TextField messageBox;
+	TextArea allMessages;
+
+	Frame loginWindow;
+	TextField usernameTextField;
+	Button loginUser;
+
+	String username;
 
 	/*
 	 *	Establish constructor.
@@ -31,27 +39,54 @@ public class Client extends Thread implements ActionListener
 	public Client()
 	{	
 		
-		// Establish frame.
-		f = new Frame();
-		f.setSize(300,400);
-		f.setTitle("Chat Client");
-		f.addWindowListener(new WindowAdapter() {
+		// Establish chatWindow frame.
+		chatWindow = new Frame();
+		chatWindow.setSize(300,400);
+		chatWindow.setTitle("Chat Client");
+		chatWindow.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent we) {
+				System.exit(0);
+			}
+		});
+
+		// Establish login frame.
+		loginWindow = new Frame();
+		loginWindow.setSize(300, 100);
+		loginWindow.setTitle("Log In");
+		loginWindow.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent we) {
 				System.exit(0);
 			}
 		});
 
 		// Establish text field.
-		tf = new TextField();
-		tf.addActionListener(this);
+		messageBox = new TextField();
+		messageBox.addActionListener(this);
 		
 		// Establish text area.
-		ta = new TextArea();
+		allMessages = new TextArea();
 
 		// Add text field and text area to frame.
-		f.add(tf, BorderLayout.NORTH);
-		f.add(ta, BorderLayout.CENTER);
+		chatWindow.add(messageBox, BorderLayout.NORTH);
+		chatWindow.add(allMessages, BorderLayout.CENTER);
+
+		usernameTextField = new TextField();
+		loginUser = new Button("Log In");
+		loginUser.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) 
+			{
+				if(usernameTextField.getText().length() > 0) 
+				{
+					username = usernameTextField.getText();
+					loginWindow.setVisible(false);
+					allMessages.append("Welcome to the Chat Room, " + username + "!\n\n");
+				}
+			}
+		});
 		
+		loginWindow.add(loginUser, BorderLayout.SOUTH);
+		loginWindow.add(usernameTextField, BorderLayout.NORTH);
+
 		// Attempt to connect to the server.
 		try
 		{
@@ -59,9 +94,9 @@ public class Client extends Thread implements ActionListener
 			/*
 			 * Connect to server address and port. 
 			 * Ex: 127.0.0.1
-			 * Ex: afs1.njit.edu
+			 * Ex: osl1.njit.edu
 			 */
-			socketToServer = new Socket("127.0.0.1", 4000);
+			socketToServer = new Socket("osl1.njit.edu", 8181);
 
 			// Establish streams, start() executes run()
 			myOutputStream = new ObjectOutputStream(socketToServer.getOutputStream());
@@ -74,7 +109,8 @@ public class Client extends Thread implements ActionListener
     }
 		
 		// Show frame.
-		f.setVisible(true);
+		chatWindow.setVisible(true);
+		loginWindow.setVisible(true);
 	}
 
 	/*
@@ -86,9 +122,8 @@ public class Client extends Thread implements ActionListener
 		 * Create ChatMessage object, set message as 
 		 * ...text from text field. Reset text field.
 		 */
-		myObject = new ChatMessage();
-		myObject.setMessage(tf.getText());
-		tf.setText("");
+		myObject = new ChatMessage(username, messageBox.getText());
+		messageBox.setText("");
 
 		/*
 		 * Try to reset outputStream, write.
@@ -121,7 +156,7 @@ public class Client extends Thread implements ActionListener
 			while(!receivingdone)
 			{
 				myObject = (ChatMessage)myInputStream.readObject();
-        ta.append(myObject.getMessage() + "\n");
+        allMessages.append(myObject.getName() + ": " + myObject.getMessage() + "\n");
 			}
 		}
 		catch(IOException ioe)

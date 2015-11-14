@@ -82,8 +82,7 @@ class ChatHandler extends Thread
      */
   	for(ChatHandler handler : handlers)
     {
-   	 	ChatMessage cm = new ChatMessage();
-  		cm.setMessage(myObject.getMessage());
+   	 	ChatMessage cm = new ChatMessage(myObject.getName(), myObject.getMessage);
   		try
       {
   			handler.out.writeObject(cm);
