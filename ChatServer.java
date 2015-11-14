@@ -20,7 +20,7 @@ public class ChatServer
     try 
     {  
       //  Set socket to 4000. This can be changed to anything 1025 - 65536.
-      ServerSocket s = new ServerSocket(4000);
+      ServerSocket s = new ServerSocket(8181);
       
       //  On a loop forever.
       for (;;)

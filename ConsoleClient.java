@@ -36,7 +36,7 @@ public class ConsoleClient extends Thread
 
 			// Connect to server.
 			// Set up input / output streams.
-			socketToServer = new Socket("afs1.njit.edu", 4000);
+			socketToServer = new Socket("osl1.njit.edu", 8181);
 			myOutputStream = new ObjectOutputStream(socketToServer.getOutputStream());
 			myInputStream = new ObjectInputStream(socketToServer.getInputStream());
 
