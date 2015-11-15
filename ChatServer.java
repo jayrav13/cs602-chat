@@ -160,16 +160,26 @@ class ChatHandler extends Thread
   {  
   	try
     { 	
-  		while(!done)
+  		while(true)
       {
         /*
          *  When a message arrives, collect it and broadcast it.
          */
-  			myObject = (ChatMessage)in.readObject();
-        myUsername = myObject.getName();
-        System.out.println("INCOMING: username = " + myObject.getName() + ", message = " + myObject.getMessage());
-        broadcast();
-
+        if(!done)
+        {
+          myObject = (ChatMessage)in.readObject();
+          myUsername = myObject.getName();
+          System.out.println("INCOMING: username = " + myObject.getName() + ", message = " + myObject.getMessage());
+          broadcast();
+        }
+        else
+        {
+          if(myObject.getMessage().equals("admin-connect"))
+          {
+            done = true;
+            broadcast();
+          }
+        }
   		}			    
   	} 
     catch (IOException e)

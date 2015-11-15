@@ -34,7 +34,7 @@ public class Client extends Thread implements ActionListener
 	Button loginUser;
 
 	String username;
-	boolean isDevelopment = true;
+	boolean isDevelopment = false;
 
 	/*
 	 *	Establish constructor.
@@ -179,7 +179,7 @@ public class Client extends Thread implements ActionListener
 			if(myObject.getMessage().equals("bye"))
 			{
 				userList.setText("");
-				allMessages.setText("Logged out.");
+				allMessages.append("Logged out.\n");
 				loginWindow.setVisible(true);
 			}
 
