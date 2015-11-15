@@ -21,6 +21,7 @@ public class ConsoleClient extends Thread
 	ObjectInputStream myInputStream;
 
 	String username;
+	boolean isDevelopment = true;
 
 	/*
 	 *	Establish constructor
@@ -45,9 +46,20 @@ public class ConsoleClient extends Thread
 
 			System.out.println("Logged in as " + username + ".");
 
-			// Connect to server.
-			// Set up input / output streams.
-			socketToServer = new Socket("osl1.njit.edu", 8181);
+			/*
+			 * Connect to server address and port. 
+			 * Ex: 127.0.0.1
+			 * Ex: osl1.njit.edu
+			 */
+			if(isDevelopment) 
+			{
+				socketToServer = new Socket("127.0.0.1", 8181);
+			}
+			else 
+			{
+				socketToServer = new Socket("osl1.njit.edu", 8181);
+			}
+			
 			myOutputStream = new ObjectOutputStream(socketToServer.getOutputStream());
 			myInputStream = new ObjectInputStream(socketToServer.getInputStream());
 
@@ -99,7 +111,15 @@ public class ConsoleClient extends Thread
 			while(!receivingdone)
 			{
 				myObject = (ChatMessage)myInputStream.readObject();
-        System.out.println("Messaged received : " + myObject.getMessage());
+				
+				if(myObject.getMessage().contains("bye"))
+				{
+					System.out.println(myObject.getName() + " has left the chat room.");
+				}
+				else
+				{
+					System.out.println(myObject.getName() + ": " + myObject.getMessage());
+				}
 			}
 		}
 		catch(IOException ioe)

@@ -26,22 +26,55 @@ public class Client extends Thread implements ActionListener
 	Frame chatWindow;
 	TextField messageBox;
 	TextArea allMessages;
+	TextArea userList;
+	Panel mainPanel;
 
 	Frame loginWindow;
 	TextField usernameTextField;
 	Button loginUser;
 
 	String username;
+	boolean isDevelopment = true;
 
 	/*
 	 *	Establish constructor.
 	 */
 	public Client()
 	{	
+
+		// Attempt to connect to the server.
+		try
+		{
+
+			/*
+			 * Connect to server address and port. 
+			 * Ex: 127.0.0.1
+			 * Ex: osl1.njit.edu
+			 */
+			if(isDevelopment)
+			{
+				socketToServer = new Socket("127.0.0.1", 8181);
+			}
+			else
+			{
+				socketToServer = new Socket("osl1.njit.edu", 8181);
+			}
+			
+
+			// Establish streams, start() executes run()
+			myOutputStream = new ObjectOutputStream(socketToServer.getOutputStream());
+			myInputStream = new ObjectInputStream(socketToServer.getInputStream());
+
+			start();
+		}
+		catch(Exception e)
+		{
+			System.out.println(e.getMessage());	
+    }
 		
 		// Establish chatWindow frame.
 		chatWindow = new Frame();
-		chatWindow.setSize(300,400);
+		chatWindow.setSize(600,400);
 		chatWindow.setTitle("Chat Client");
 		chatWindow.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent we) {
@@ -65,10 +98,15 @@ public class Client extends Thread implements ActionListener
 		
 		// Establish text area.
 		allMessages = new TextArea();
+		userList = new TextArea(10, 10);
+		mainPanel = new Panel(new BorderLayout());
+
+		mainPanel.add(userList, BorderLayout.WEST);
+		mainPanel.add(allMessages, BorderLayout.EAST);
 
 		// Add text field and text area to frame.
 		chatWindow.add(messageBox, BorderLayout.NORTH);
-		chatWindow.add(allMessages, BorderLayout.CENTER);
+		chatWindow.add(mainPanel, BorderLayout.CENTER);
 
 		usernameTextField = new TextField();
 		loginUser = new Button("Log In");
@@ -78,6 +116,29 @@ public class Client extends Thread implements ActionListener
 				if(usernameTextField.getText().length() > 0) 
 				{
 					username = usernameTextField.getText();
+
+					myObject = new ChatMessage(username, "admin-connect");
+					try
+					{
+						myOutputStream.reset();
+						myOutputStream.writeObject(myObject);
+					}
+					catch(IOException ioe)
+					{
+						System.out.println(ioe.getMessage());
+					}
+
+					myObject.setMessage("admin-listofusers");
+					try
+					{
+						myOutputStream.reset();
+						myOutputStream.writeObject(myObject);
+					}
+					catch(IOException ioe)
+					{
+						System.out.println(ioe.getMessage());
+					}
+
 					loginWindow.setVisible(false);
 					allMessages.append("Welcome to the Chat Room, " + username + "!\n\n");
 				}
@@ -87,26 +148,7 @@ public class Client extends Thread implements ActionListener
 		loginWindow.add(loginUser, BorderLayout.SOUTH);
 		loginWindow.add(usernameTextField, BorderLayout.NORTH);
 
-		// Attempt to connect to the server.
-		try
-		{
 
-			/*
-			 * Connect to server address and port. 
-			 * Ex: 127.0.0.1
-			 * Ex: osl1.njit.edu
-			 */
-			socketToServer = new Socket("osl1.njit.edu", 8181);
-
-			// Establish streams, start() executes run()
-			myOutputStream = new ObjectOutputStream(socketToServer.getOutputStream());
-			myInputStream = new ObjectInputStream(socketToServer.getInputStream());
-			start();
-		}
-		catch(Exception e)
-		{
-			System.out.println(e.getMessage());	
-    }
 		
 		// Show frame.
 		chatWindow.setVisible(true);
@@ -133,6 +175,14 @@ public class Client extends Thread implements ActionListener
 		{
 			myOutputStream.reset();
 			myOutputStream.writeObject(myObject);
+
+			if(myObject.getMessage().equals("bye"))
+			{
+				userList.setText("");
+				allMessages.setText("Logged out.");
+				loginWindow.setVisible(true);
+			}
+
 		}
 		catch(IOException ioe)
 		{
@@ -156,7 +206,14 @@ public class Client extends Thread implements ActionListener
 			while(!receivingdone)
 			{
 				myObject = (ChatMessage)myInputStream.readObject();
-        allMessages.append(myObject.getName() + ": " + myObject.getMessage() + "\n");
+				if(myObject.getName().equals("admin-listofusers"))
+				{
+					userList.setText(myObject.getMessage());
+				}
+				else 
+				{
+					allMessages.append(myObject.getName() + ": " + myObject.getMessage() + "\n");
+				}
 			}
 		}
 		catch(IOException ioe)

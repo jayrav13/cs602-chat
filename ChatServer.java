@@ -74,44 +74,83 @@ class ChatHandler extends Thread
    */
   public synchronized void broadcast()
   {
-
-  	ChatHandler left = null;
-  
-    /*
-     *  For each ChatHandler, take my message and write that message out.
-     */
-  	for(ChatHandler handler : handlers)
-    {
-   	 	ChatMessage cm = new ChatMessage(myObject.getName(), myObject.getMessage);
-  		try
-      {
-  			handler.out.writeObject(cm);
-  			System.out.println("Writing to handler outputstream: " + cm.getMessage());
-  		}
-      catch(IOException ioe)
-      {
-        /*
-         *  This exception is thrown when one of the client is no longer available.
-         *  In that case, just remove the handler.
-         */
-  			left = handler;
-  		}
-  	}
-  	
-    handlers.remove(left);
-  	
     /*
      *  Wait for special message "bye" to force hang up client.
      *  This ends the run() loop and displays number of remaining handlers.
      */
-  	if(myObject.getMessage().equals("bye"))
-  	{
-      done = true;	
-  		handlers.remove(this);
-  		System.out.println("Removed handler. Number of handlers: " + handlers.size());
-  	}
-  	
-    System.out.println("Number of handlers: " + handlers.size());
+    if(myObject.getMessage().equals("bye"))
+    {
+      done = true;
+      handlers.remove(this);
+    }
+    else if(myObject.getMessage().contains("admin-"))
+    {
+      if(myObject.getMessage().equals("admin-connect"))
+      {
+        System.out.println("OUTGOING: /connected username = " + myObject.getName() + ", message = " + myObject.getMessage() + ", count = " + handlers.size());
+        /*
+         *  Do nothing. Handler added.
+         */
+      }
+      else if(myObject.getMessage().equals("admin-listofusers"))
+      {
+        String output = "";
+        for(ChatHandler handler : handlers)
+        {
+          output = output + handler.myUsername + "\n";
+        }
+        myObject.setMessage(output.substring(0, output.length() - 1));
+        ChatHandler left = null;
+
+        for(ChatHandler handler : handlers)
+        {
+          myObject.setName("admin-listofusers");
+          ChatMessage cm = new ChatMessage(myObject.getName(), myObject.getMessage().substring(0, myObject.getMessage().length()));
+          try
+          {
+            handler.out.writeObject(cm);
+            System.out.println("OUTGOING: /message username = " + myObject.getName() + ", message = " + myObject.getMessage());
+          }
+          catch(IOException ioe)
+          {
+            /*
+             *  This exception is thrown when one of the client is no longer available.
+             *  In that case, just remove the handler.
+             */
+            left = handler;
+          }
+        }
+        handlers.remove(left);
+      }
+    }
+    else 
+    {
+      ChatHandler left = null;
+  
+      /*
+       *  For each ChatHandler, take my message and write that message out.
+       */
+      for(ChatHandler handler : handlers)
+      {
+        ChatMessage cm = new ChatMessage(myObject.getName(), myObject.getMessage());
+        try
+        {
+          handler.out.writeObject(cm);
+          System.out.println("OUTGOING: /message username = " + handler.myUsername + ", message = " + myObject.getMessage());
+        }
+        catch(IOException ioe)
+        {
+          /*
+           *  This exception is thrown when one of the client is no longer available.
+           *  In that case, just remove the handler.
+           */
+          left = handler;
+        }
+      }
+      
+      handlers.remove(left);
+    }
+
   }
 
   /*
@@ -125,12 +164,12 @@ class ChatHandler extends Thread
       {
         /*
          *  When a message arrives, collect it and broadcast it.
-         *  QUESTION - does this only execute when a message is sent?
-         *  This should be running whenever a client connects.
          */
   			myObject = (ChatMessage)in.readObject();
-  			System.out.println("Message read: " + myObject.getMessage());
-  			broadcast();
+        myUsername = myObject.getName();
+        System.out.println("INCOMING: username = " + myObject.getName() + ", message = " + myObject.getMessage());
+        broadcast();
+
   		}			    
   	} 
     catch (IOException e)
@@ -158,9 +197,12 @@ class ChatHandler extends Thread
   private Socket incoming;
 
   boolean done = false;
+  String myUsername;
   ArrayList<ChatHandler> handlers;
 
   ObjectOutputStream out;
   ObjectInputStream in;
+
+  PrintWriter writer;
 }
 
