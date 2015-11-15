@@ -139,6 +139,17 @@ public class Client extends Thread implements ActionListener
 						System.out.println(ioe.getMessage());
 					}
 
+					myObject.setMessage("admin-history");
+					try
+					{
+						myOutputStream.reset();
+						myOutputStream.writeObject(myObject);
+					}
+					catch(IOException ioe)
+					{
+						System.out.println(ioe.getMessage());
+					}
+
 					loginWindow.setVisible(false);
 					allMessages.append("Welcome to the Chat Room, " + username + "!\n\n");
 				}
@@ -210,7 +221,7 @@ public class Client extends Thread implements ActionListener
 				{
 					userList.setText(myObject.getMessage());
 				}
-				else 
+				else
 				{
 					allMessages.append(myObject.getName() + ": " + myObject.getMessage() + "\n");
 				}

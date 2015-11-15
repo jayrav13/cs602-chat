@@ -12,5 +12,5 @@ Requirements:
 - [DONE] Connect/Disconnect: 10 points
 - [DONE] Prepend user names to messages (e.g., John: hello): 10 points
 - [DONE] User list (who is currently in the chat room): 10 points
-- Message history: 10 points
+- [DONE] Message history: 10 points
 - Shared whiteboard: 10 points

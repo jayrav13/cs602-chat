@@ -123,11 +123,58 @@ class ChatHandler extends Thread
         }
         handlers.remove(left);
       }
+      else if(myObject.getMessage().equals("admin-history"))
+      {
+        String output = "";
+        try
+        {
+          File file = new File("history.txt");
+          Scanner scanner = new Scanner(file);
+          while(scanner.hasNext())
+          {
+            output = output + scanner.nextLine() + "\n";
+          }
+          scanner.close();
+
+          try
+          {
+            for(ChatHandler handler : handlers)
+            {
+              if(handler.myUsername.equals(myObject.getName()))
+              {
+                ChatMessage cm = new ChatMessage("admin-history", output);
+                handler.out.writeObject(cm);
+                System.out.println("OUTGOING: /history username = " + myObject.getName());
+              }
+            }
+          }
+          catch(IOException ioe)
+          {
+            System.out.println(ioe.getMessage());
+          }
+
+        }
+        catch(FileNotFoundException e)
+        {
+          System.out.println(e.getMessage());
+        }
+      }
     }
     else 
     {
       ChatHandler left = null;
   
+      try
+      {
+        FileWriter fw = new FileWriter("history.txt", true);
+        fw.write(myObject.getName() + ": " + myObject.getMessage() + "\n");
+        fw.close();
+      }
+      catch(IOException ioe)
+      {
+        System.out.println(ioe.getMessage());
+      }
+
       /*
        *  For each ChatHandler, take my message and write that message out.
        */
