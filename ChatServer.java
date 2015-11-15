@@ -81,9 +81,10 @@ class ChatHandler extends Thread
     if(myObject.getMessage().equals("bye"))
     {
       done = true;
+      myObject.setMessage("admin-listofusers");
       handlers.remove(this);
     }
-    else if(myObject.getMessage().contains("admin-"))
+    if(myObject.getMessage().contains("admin-"))
     {
       if(myObject.getMessage().equals("admin-connect"))
       {
@@ -165,20 +166,12 @@ class ChatHandler extends Thread
         /*
          *  When a message arrives, collect it and broadcast it.
          */
-        if(!done)
+        while(!done)
         {
           myObject = (ChatMessage)in.readObject();
           myUsername = myObject.getName();
           System.out.println("INCOMING: username = " + myObject.getName() + ", message = " + myObject.getMessage());
           broadcast();
-        }
-        else
-        {
-          if(myObject.getMessage().equals("admin-connect"))
-          {
-            done = true;
-            broadcast();
-          }
         }
   		}			    
   	} 
