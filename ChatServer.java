@@ -19,7 +19,7 @@ public class ChatServer
 	
     try 
     {  
-      //  Set socket to 4000. This can be changed to anything 1025 - 65536.
+      //  Set socket to 8181. This can be changed to anything 1025 - 65536.
       ServerSocket s = new ServerSocket(8181);
       
       //  On a loop forever.
@@ -51,12 +51,12 @@ class ChatHandler extends Thread
   public ChatHandler(Socket i, ArrayList<ChatHandler> h) 
   {
     /*
-     *  Add self to handlers. Attempt to create streams.
+     *  Attempt to create streams.
      */
 
  	  incoming = i;
 	  handlers = h;
-	  handlers.add(this);
+	  // handlers.add(this);
 
 	  try
     {
@@ -84,10 +84,13 @@ class ChatHandler extends Thread
       myObject.setMessage("admin-listofusers");
       handlers.remove(this);
     }
+
     if(myObject.getMessage().contains("admin-"))
     {
+      done = false;
       if(myObject.getMessage().equals("admin-connect"))
       {
+        handlers.add(this);
         System.out.println("OUTGOING: /connected username = " + myObject.getName() + ", message = " + myObject.getMessage() + ", count = " + handlers.size());
         /*
          *  Do nothing. Handler added.
@@ -95,7 +98,7 @@ class ChatHandler extends Thread
       }
       else if(myObject.getMessage().equals("admin-listofusers"))
       {
-        String output = "";
+        String output = "User List\n\n";
         for(ChatHandler handler : handlers)
         {
           output = output + handler.myUsername + "\n";
@@ -205,22 +208,17 @@ class ChatHandler extends Thread
    *  Primary function that listens for messages.
    */
   public void run()
-  {  
+  {
+    System.out.println("Started...");
   	try
     { 	
-  		while(true)
+      while(!done)
       {
-        /*
-         *  When a message arrives, collect it and broadcast it.
-         */
-        while(!done)
-        {
-          myObject = (ChatMessage)in.readObject();
-          myUsername = myObject.getName();
-          System.out.println("INCOMING: username = " + myObject.getName() + ", message = " + myObject.getMessage());
-          broadcast();
-        }
-  		}			    
+        myObject = (ChatMessage)in.readObject();
+        myUsername = myObject.getName();
+        System.out.println("INCOMING: username = " + myObject.getName() + ", message = " + myObject.getMessage());
+        broadcast();
+      }
   	} 
     catch (IOException e)
     {  

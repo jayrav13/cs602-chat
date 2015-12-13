@@ -25,16 +25,19 @@ public class Client extends Thread implements ActionListener
 
 	Frame chatWindow;
 	TextField messageBox;
+	TextField loginTextField;
 	TextArea allMessages;
 	TextArea userList;
-	Panel mainPanel;
+	Panel northPanel;
+	Panel centerPanel;
+	Panel loginPanel;
 
 	Frame loginWindow;
 	TextField usernameTextField;
 	Button loginUser;
 
 	String username;
-	boolean isDevelopment = false;
+	boolean isDevelopment = true;
 
 	/*
 	 *	Establish constructor.
@@ -45,7 +48,6 @@ public class Client extends Thread implements ActionListener
 		// Attempt to connect to the server.
 		try
 		{
-
 			/*
 			 * Connect to server address and port. 
 			 * Ex: 127.0.0.1
@@ -72,6 +74,10 @@ public class Client extends Thread implements ActionListener
 			System.out.println(e.getMessage());	
     }
 		
+    northPanel = new Panel();
+    centerPanel = new Panel();
+    loginPanel = new Panel();
+
 		// Establish chatWindow frame.
 		chatWindow = new Frame();
 		chatWindow.setSize(600,400);
@@ -81,6 +87,9 @@ public class Client extends Thread implements ActionListener
 				System.exit(0);
 			}
 		});
+
+		loginTextField = new TextField();
+		chatWindow.add(loginTextField, BorderLayout.SOUTH);
 
 		// Establish login frame.
 		loginWindow = new Frame();
@@ -105,6 +114,9 @@ public class Client extends Thread implements ActionListener
 		mainPanel.add(allMessages, BorderLayout.EAST);
 
 		// Add text field and text area to frame.
+		userList.setEditable(false);
+		allMessages.setEditable(false);
+		
 		chatWindow.add(messageBox, BorderLayout.NORTH);
 		chatWindow.add(mainPanel, BorderLayout.CENTER);
 
@@ -158,8 +170,6 @@ public class Client extends Thread implements ActionListener
 		
 		loginWindow.add(loginUser, BorderLayout.SOUTH);
 		loginWindow.add(usernameTextField, BorderLayout.NORTH);
-
-
 		
 		// Show frame.
 		chatWindow.setVisible(true);
@@ -189,6 +199,7 @@ public class Client extends Thread implements ActionListener
 
 			if(myObject.getMessage().equals("bye"))
 			{
+
 				userList.setText("");
 				allMessages.append("Logged out.\n");
 				loginWindow.setVisible(true);
