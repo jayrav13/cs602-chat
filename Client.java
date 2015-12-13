@@ -4,6 +4,7 @@
 
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -23,14 +24,13 @@ public class Client extends Thread implements ActionListener
 	ChatMessage myObject;
 	Scanner scan;
 
-	Frame chatWindow;
+	Frame newChatWindow;
 	TextField messageBox;
-	TextField loginTextField;
 	TextArea allMessages;
-	TextArea userList;
 	Panel northPanel;
 	Panel centerPanel;
 	Panel loginPanel;
+	JList userListList;
 
 	Frame loginWindow;
 	TextField usernameTextField;
@@ -43,8 +43,7 @@ public class Client extends Thread implements ActionListener
 	 *	Establish constructor.
 	 */
 	public Client()
-	{	
-
+	{
 		// Attempt to connect to the server.
 		try
 		{
@@ -73,55 +72,37 @@ public class Client extends Thread implements ActionListener
 		{
 			System.out.println(e.getMessage());	
     }
-		
-    northPanel = new Panel();
-    centerPanel = new Panel();
-    loginPanel = new Panel();
 
-		// Establish chatWindow frame.
-		chatWindow = new Frame();
-		chatWindow.setSize(600,400);
-		chatWindow.setTitle("Chat Client");
-		chatWindow.addWindowListener(new WindowAdapter() {
+		// New Window
+		newChatWindow = new Frame();
+		newChatWindow.setSize(600, 400);
+		newChatWindow.setTitle("Chat Client");
+		newChatWindow.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent we) {
 				System.exit(0);
 			}
 		});
 
-		loginTextField = new TextField();
-		chatWindow.add(loginTextField, BorderLayout.SOUTH);
+    northPanel = new Panel(new BorderLayout());
+    centerPanel = new Panel(new BorderLayout());
+    loginPanel = new Panel(new BorderLayout());
 
-		// Establish login frame.
-		loginWindow = new Frame();
-		loginWindow.setSize(300, 100);
-		loginWindow.setTitle("Log In");
-		loginWindow.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent we) {
-				System.exit(0);
-			}
-		});
+    // Establish text area.
+    allMessages = new TextArea();
+		userListList = new JList();
+		centerPanel.add(allMessages, BorderLayout.EAST);
+		centerPanel.add(userListList, BorderLayout.WEST);
+		newChatWindow.add(centerPanel, BorderLayout.CENTER);
 
-		// Establish text field.
+    // Establish text field.
 		messageBox = new TextField();
 		messageBox.addActionListener(this);
-		
-		// Establish text area.
-		allMessages = new TextArea();
-		userList = new TextArea(10, 10);
-		mainPanel = new Panel(new BorderLayout());
+		newChatWindow.add(messageBox, BorderLayout.NORTH);
 
-		mainPanel.add(userList, BorderLayout.WEST);
-		mainPanel.add(allMessages, BorderLayout.EAST);
-
-		// Add text field and text area to frame.
-		userList.setEditable(false);
-		allMessages.setEditable(false);
-		
-		chatWindow.add(messageBox, BorderLayout.NORTH);
-		chatWindow.add(mainPanel, BorderLayout.CENTER);
-
-		usernameTextField = new TextField();
-		loginUser = new Button("Log In");
+		usernameTextField = new TextField(60);
+		loginPanel.add(usernameTextField, BorderLayout.WEST);
+		loginUser = new Button("Login");
+		loginPanel.add(loginUser, BorderLayout.EAST);
 		loginUser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
@@ -162,18 +143,14 @@ public class Client extends Thread implements ActionListener
 						System.out.println(ioe.getMessage());
 					}
 
-					loginWindow.setVisible(false);
 					allMessages.append("Welcome to the Chat Room, " + username + "!\n\n");
 				}
 			}
 		});
-		
-		loginWindow.add(loginUser, BorderLayout.SOUTH);
-		loginWindow.add(usernameTextField, BorderLayout.NORTH);
-		
+		newChatWindow.add(loginPanel, BorderLayout.SOUTH);
+
 		// Show frame.
-		chatWindow.setVisible(true);
-		loginWindow.setVisible(true);
+		newChatWindow.setVisible(true);
 	}
 
 	/*
@@ -199,7 +176,6 @@ public class Client extends Thread implements ActionListener
 
 			if(myObject.getMessage().equals("bye"))
 			{
-
 				userList.setText("");
 				allMessages.append("Logged out.\n");
 				loginWindow.setVisible(true);
@@ -231,6 +207,15 @@ public class Client extends Thread implements ActionListener
 				if(myObject.getName().equals("admin-listofusers"))
 				{
 					userList.setText(myObject.getMessage());
+					String[] response = myObject.getMessage().split("\n");
+					for(int i = 0; i < response.length; i++) {
+						System.out.println(response[i]);
+					}
+					userListList.setListData(response);
+				}
+				else if(myObject.getName().equals("admin-history")) 
+				{
+					allMessages.append(myObject.getMessage());
 				}
 				else
 				{
