@@ -75,7 +75,6 @@ class ChatHandler extends Thread
   public synchronized void broadcast()
   {
     /*
-     *  Wait for special message "bye" to force hang up client.
      *  This ends the run() loop and displays number of remaining handlers.
      */
     if(myObject.getMessage().equals("bye"))

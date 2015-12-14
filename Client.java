@@ -249,6 +249,10 @@ public class Client extends Thread implements ActionListener
 				{
 					allMessages.append(myObject.getMessage());
 				}
+				else if(myObject.getMessage().equals("draw-coordinates"))
+				{
+					whiteboard.addLineToWhiteboard(myObject.getName());
+				}
 				else
 				{
 					allMessages.append(myObject.getName() + ": " + myObject.getMessage() + "\n");
@@ -265,46 +269,53 @@ public class Client extends Thread implements ActionListener
 		}
 	}
 	class WhiteBoard extends JPanel implements MouseMotionListener {
-	int lastX = -1;
-	int lastY = -1;
+		int lastX = -1;
+		int lastY = -1;
 
-	public WhiteBoard() 
-	{
-		addMouseMotionListener(this);
-	}
-
-	public void paintComponent(Graphics g)
-	{
-		// g.drawOval(10, 10, 200, 200);
-		// doPainting(g);
-	}
-
-	public void doPainting(Graphics g)
-	{
-		Graphics2D g2d = (Graphics2D)g;
-		System.out.println("REACHED!");
-	}
-
-	public void mouseMoved(MouseEvent e)
-	{
-		System.out.println("Moved: " + e.getX() + "," + e.getY());
-	}
-
-	public void mouseDragged(MouseEvent e)
-	{
-		if(lastX + lastY != -2) {
-			getGraphics().drawLine(lastX, lastY, e.getX(), e.getY());
+		public WhiteBoard() 
+		{
+			addMouseMotionListener(this);
 		}
-		record(e.getX(), e.getY());
-		System.out.println("Dragged: " + e.getX() + "," + e.getY());
-	}
 
-	private void record(int x, int y)
-	{
-		lastX = x;
-		lastY = y;
+		public void mouseMoved(MouseEvent e)
+		{
+			System.out.println("Moved: " + e.getX() + "," + e.getY());
+		}
+
+		public void addLineToWhiteboard(String coords)
+		{
+			String[] coordinates = coords.split(",");
+
+			getGraphics().drawLine(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1]), Integer.parseInt(coordinates[2]), Integer.parseInt(coordinates[3]));
+		}
+
+		public void mouseDragged(MouseEvent e)
+		{
+			if(lastX + lastY != -2) {
+				// getGraphics().drawLine(lastX, lastY, e.getX(), e.getY());
+			}
+
+			myObject = new ChatMessage((lastX + "," + lastY + "," + e.getX() + "," + e.getY()), "draw-coordinates");
+
+			try {
+				myOutputStream.reset();
+				myOutputStream.writeObject(myObject);
+			}
+			catch (IOException ioe) {
+				System.out.println(ioe.getMessage());
+			}
+
+			record(e.getX(), e.getY());
+
+			System.out.println("Dragged: " + e.getX() + "," + e.getY());
+		}
+
+		private void record(int x, int y)
+		{
+			lastX = x;
+			lastY = y;
+		}
 	}
-}
 
 	public static void main(String[] arg){
 	
