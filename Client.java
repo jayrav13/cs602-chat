@@ -30,14 +30,17 @@ public class Client extends Thread implements ActionListener
 	Panel northPanel;
 	Panel centerPanel;
 	Panel loginPanel;
-	JList userListList;
+	WhiteBoard whiteboard;
+	JList userList;
 
-	Frame loginWindow;
 	TextField usernameTextField;
-	Button loginUser;
+	JButton loginButton;
 
 	String username;
+	boolean isLoggedIn = false;
 	boolean isDevelopment = true;
+
+	String[] users;
 
 	/*
 	 *	Establish constructor.
@@ -89,28 +92,80 @@ public class Client extends Thread implements ActionListener
 
     // Establish text area.
     allMessages = new TextArea();
-		userListList = new JList();
-		centerPanel.add(allMessages, BorderLayout.EAST);
-		centerPanel.add(userListList, BorderLayout.WEST);
+		userList = new JList();
+		whiteboard = new WhiteBoard();
+		whiteboard.setPreferredSize(new Dimension(200, 200));
+		centerPanel.add(allMessages, BorderLayout.CENTER);
+		centerPanel.add(userList, BorderLayout.WEST);
+		centerPanel.add(whiteboard, BorderLayout.EAST);
 		newChatWindow.add(centerPanel, BorderLayout.CENTER);
 
     // Establish text field.
 		messageBox = new TextField();
 		messageBox.addActionListener(this);
-		newChatWindow.add(messageBox, BorderLayout.NORTH);
+		newChatWindow.add(messageBox, BorderLayout.SOUTH);
 
-		usernameTextField = new TextField(60);
-		loginPanel.add(usernameTextField, BorderLayout.WEST);
-		loginUser = new Button("Login");
-		loginPanel.add(loginUser, BorderLayout.EAST);
-		loginUser.addActionListener(new ActionListener() {
+		usernameTextField = new TextField(30);
+		loginPanel.add(usernameTextField, BorderLayout.CENTER);
+		loginButton = new JButton("Login");
+		loginPanel.add(loginButton, BorderLayout.EAST);
+		loginButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
-				if(usernameTextField.getText().length() > 0) 
+				loginButton.setText("Logout");
+				allMessages.setText("");
+				if(!isLoggedIn)
 				{
-					username = usernameTextField.getText();
+					if(usernameTextField.getText().length() > 0) 
+					{
+						username = usernameTextField.getText();
 
-					myObject = new ChatMessage(username, "admin-connect");
+						myObject = new ChatMessage(username, "admin-connect");
+						try
+						{
+							myOutputStream.reset();
+							myOutputStream.writeObject(myObject);
+						}
+						catch(IOException ioe)
+						{
+							System.out.println(ioe.getMessage());
+						}
+
+						myObject.setMessage("admin-listofusers");
+						try
+						{
+							myOutputStream.reset();
+							myOutputStream.writeObject(myObject);
+						}
+						catch(IOException ioe)
+						{
+							System.out.println(ioe.getMessage());
+						}
+
+						myObject.setMessage("admin-history");
+						try
+						{
+							myOutputStream.reset();
+							myOutputStream.writeObject(myObject);
+						}
+						catch(IOException ioe)
+						{
+							System.out.println(ioe.getMessage());
+						}
+
+						allMessages.setText("Welcome to the Chat Room, " + username + "!\n\n");
+
+						isLoggedIn = true;
+					}
+				}
+				else
+				{
+					isLoggedIn = false;
+					loginButton.setText("Login");
+					users = new String[0];
+					userList.setListData(users);
+
+					myObject = new ChatMessage(username, "bye");
 					try
 					{
 						myOutputStream.reset();
@@ -121,33 +176,11 @@ public class Client extends Thread implements ActionListener
 						System.out.println(ioe.getMessage());
 					}
 
-					myObject.setMessage("admin-listofusers");
-					try
-					{
-						myOutputStream.reset();
-						myOutputStream.writeObject(myObject);
-					}
-					catch(IOException ioe)
-					{
-						System.out.println(ioe.getMessage());
-					}
-
-					myObject.setMessage("admin-history");
-					try
-					{
-						myOutputStream.reset();
-						myOutputStream.writeObject(myObject);
-					}
-					catch(IOException ioe)
-					{
-						System.out.println(ioe.getMessage());
-					}
-
-					allMessages.append("Welcome to the Chat Room, " + username + "!\n\n");
+					allMessages.append("Logged out.\n");
 				}
 			}
 		});
-		newChatWindow.add(loginPanel, BorderLayout.SOUTH);
+		newChatWindow.add(loginPanel, BorderLayout.NORTH);
 
 		// Show frame.
 		newChatWindow.setVisible(true);
@@ -176,9 +209,9 @@ public class Client extends Thread implements ActionListener
 
 			if(myObject.getMessage().equals("bye"))
 			{
-				userList.setText("");
+				users = new String[0];
+				userList.setListData(users);
 				allMessages.append("Logged out.\n");
-				loginWindow.setVisible(true);
 			}
 
 		}
@@ -206,12 +239,11 @@ public class Client extends Thread implements ActionListener
 				myObject = (ChatMessage)myInputStream.readObject();
 				if(myObject.getName().equals("admin-listofusers"))
 				{
-					userList.setText(myObject.getMessage());
 					String[] response = myObject.getMessage().split("\n");
 					for(int i = 0; i < response.length; i++) {
 						System.out.println(response[i]);
 					}
-					userListList.setListData(response);
+					userList.setListData(response);
 				}
 				else if(myObject.getName().equals("admin-history")) 
 				{
@@ -232,6 +264,47 @@ public class Client extends Thread implements ActionListener
 			System.out.println(cnf.getMessage());
 		}
 	}
+	class WhiteBoard extends JPanel implements MouseMotionListener {
+	int lastX = -1;
+	int lastY = -1;
+
+	public WhiteBoard() 
+	{
+		addMouseMotionListener(this);
+	}
+
+	public void paintComponent(Graphics g)
+	{
+		// g.drawOval(10, 10, 200, 200);
+		// doPainting(g);
+	}
+
+	public void doPainting(Graphics g)
+	{
+		Graphics2D g2d = (Graphics2D)g;
+		System.out.println("REACHED!");
+	}
+
+	public void mouseMoved(MouseEvent e)
+	{
+		System.out.println("Moved: " + e.getX() + "," + e.getY());
+	}
+
+	public void mouseDragged(MouseEvent e)
+	{
+		if(lastX + lastY != -2) {
+			getGraphics().drawLine(lastX, lastY, e.getX(), e.getY());
+		}
+		record(e.getX(), e.getY());
+		System.out.println("Dragged: " + e.getX() + "," + e.getY());
+	}
+
+	private void record(int x, int y)
+	{
+		lastX = x;
+		lastY = y;
+	}
+}
 
 	public static void main(String[] arg){
 	
@@ -242,3 +315,4 @@ public class Client extends Thread implements ActionListener
 
 	}
 }
+

@@ -4,3 +4,7 @@ Test: Test
 TestTest: exit
 TestTest: exit
 TestTest: ye
+Test: Hello, world!
+myFirstOne: Test
+myFirstOne: AnotherTest
+mySecondOne: A Third Test
