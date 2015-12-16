@@ -13,4 +13,4 @@ Requirements:
 - [DONE] Prepend user names to messages (e.g., John: hello): 10 points
 - [DONE] User list (who is currently in the chat room): 10 points
 - [DONE] Message history: 10 points
-- Shared whiteboard: 10 points
+- [DONE] Shared whiteboard: 10 points

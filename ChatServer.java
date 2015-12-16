@@ -1,4 +1,5 @@
 /*
+ *  ChatServer.java
  *  Purpose: Manage incoming messages, broadcast accordingly.
  */
 
@@ -6,29 +7,24 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-/*
- *  ChatServer: handle incoming requests.
- */
 public class ChatServer
 {  
   public static void main(String[] args) 
   {  
 
-    //  ArrayList: holds all ChatHandlers
+    /* ArrayList: holds all ChatHandlers */
     ArrayList<ChatHandler> AllHandlers = new ArrayList<ChatHandler>();
-	
-    try 
-    {  
-      //  Set socket to 8181. This can be changed to anything 1025 - 65536.
-      ServerSocket s = new ServerSocket(8181);
-      
-      //  On a loop forever.
+    int socketNumber = 8181;
+
+    try
+    {
+      /* Set socket to socketNumber. This can be changed to anything 1025 - 65536 */
+      ServerSocket s = new ServerSocket(socketNumber);
+
+      /* Infinite loop */
       for (;;)
       {
-        //  Create an incoming socket, which accepts the request from the server socket.
-        //  Create an anonymous object, ChatHandler, which receives AllHandlers as a
-          //  reference and will be added accordingly.
-        // .start() invokes run().
+        /* Accept incoming, start thread */
         Socket incoming = s.accept( );
         new ChatHandler(incoming, AllHandlers).start();
       }   
@@ -40,23 +36,16 @@ public class ChatServer
   } 
 }
 
-/*
- *  ChatHandler: keep track of all chat clients, communicate accordingly.
- */
+
+/*  ChatHandler: keep track of all chat clients, communicate accordingly */
 class ChatHandler extends Thread
 {
-  /*
-   *  Default constructor. Accepts socket and reference to ChatHandler. 
-   */
+  /*  Default constructor. Accepts socket and reference to ChatHandler */
   public ChatHandler(Socket i, ArrayList<ChatHandler> h) 
   {
-    /*
-     *  Attempt to create streams.
-     */
-
+    /* Attempt to create streams */
  	  incoming = i;
 	  handlers = h;
-	  // handlers.add(this);
 
 	  try
     {
@@ -69,14 +58,10 @@ class ChatHandler extends Thread
   	}
   }
 
-  /*
-   *  Attempts to take received message and send to everyone.
-   */
+  /*  Attempts to take received message and send to everyone */
   public synchronized void broadcast()
   {
-    /*
-     *  This ends the run() loop and displays number of remaining handlers.
-     */
+    /* If the message is bye, handler is removed */
     if(myObject.getMessage().equals("bye"))
     {
       done = true;
@@ -84,17 +69,19 @@ class ChatHandler extends Thread
       handlers.remove(this);
     }
 
+    /* For all admin messages */
     if(myObject.getMessage().contains("admin-"))
     {
       done = false;
+
+      /* On connect, add handler */
       if(myObject.getMessage().equals("admin-connect"))
       {
         handlers.add(this);
         System.out.println("OUTGOING: /connected username = " + myObject.getName() + ", message = " + myObject.getMessage() + ", count = " + handlers.size());
-        /*
-         *  Do nothing. Handler added.
-         */
       }
+
+      /* When requesting list of users, gather and send to all users */
       else if(myObject.getMessage().equals("admin-listofusers"))
       {
         String output = "User List\n\n";
@@ -116,15 +103,14 @@ class ChatHandler extends Thread
           }
           catch(IOException ioe)
           {
-            /*
-             *  This exception is thrown when one of the client is no longer available.
-             *  In that case, just remove the handler.
-             */
+            /* Handler left unexpectedly, remove */
             left = handler;
           }
         }
         handlers.remove(left);
       }
+
+      /* When requesting history, grab text file data and send to requesting handler only */
       else if(myObject.getMessage().equals("admin-history"))
       {
         String output = "";
@@ -162,24 +148,27 @@ class ChatHandler extends Thread
         }
       }
     }
+
+    /* If this isn't an admin or "bye" message, regular chat message, send to all */
     else 
     {
       ChatHandler left = null;
   
-      try
+      if(!myObject.getMessage().equals("draw-coordinates"))
       {
-        FileWriter fw = new FileWriter("history.txt", true);
-        fw.write(myObject.getName() + ": " + myObject.getMessage() + "\n");
-        fw.close();
-      }
-      catch(IOException ioe)
-      {
-        System.out.println(ioe.getMessage());
+        try
+        {
+          FileWriter fw = new FileWriter("history.txt", true);
+          fw.write(myObject.getName() + ": " + myObject.getMessage() + "\n");
+          fw.close();
+        }
+        catch(IOException ioe)
+        {
+          System.out.println(ioe.getMessage());
+        }
       }
 
-      /*
-       *  For each ChatHandler, take my message and write that message out.
-       */
+
       for(ChatHandler handler : handlers)
       {
         ChatMessage cm = new ChatMessage(myObject.getName(), myObject.getMessage());
@@ -190,10 +179,7 @@ class ChatHandler extends Thread
         }
         catch(IOException ioe)
         {
-          /*
-           *  This exception is thrown when one of the client is no longer available.
-           *  In that case, just remove the handler.
-           */
+          /* Handler left unexpectedly, remove */
           left = handler;
         }
       }
@@ -203,9 +189,7 @@ class ChatHandler extends Thread
 
   }
 
-  /*
-   *  Primary function that listens for messages.
-   */
+  /* Listen for messages */
   public void run()
   {
     System.out.println("Started...");
@@ -239,7 +223,8 @@ class ChatHandler extends Thread
   		handlers.remove(this);
   	}
   }
-   
+  
+  /* All Variables */
   ChatMessage myObject = null;
   private Socket incoming;
 
