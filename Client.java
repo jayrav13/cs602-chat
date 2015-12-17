@@ -40,7 +40,7 @@ public class Client extends Thread implements ActionListener
 	String[] users;
 
 	/* Development switch */
-	boolean isDevelopment = true;
+	boolean isDevelopment = false;
 
 
 	/* Establish constructor */
