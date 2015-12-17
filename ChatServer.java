@@ -18,7 +18,7 @@ public class ChatServer
 
     try
     {
-      /* Set socket to socketNumber. This can be changed to anything 1025 - 65536 */
+      /* Set socket to socketNumber. This can be changed to anything 1024 - 65535 */
       ServerSocket s = new ServerSocket(socketNumber);
 
       /* Infinite loop */
